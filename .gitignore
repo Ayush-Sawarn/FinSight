@@ -12,7 +12,7 @@ __pycache__/
 .env
 .env.*
 !.env.example
-.streamlit/secrets.toml
+.streamlit/
 
 # Downloaded datasets (large files; obtain using the README instructions)
 data/*.csv
