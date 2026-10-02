@@ -47,6 +47,13 @@ def build_html_report(
     if metrics_df is not None and not metrics_df.empty:
         metrics_html = metrics_df.to_html(classes="table", border=0, float_format="{:.4f}".format)
 
+    forecast_metrics = forecast_results.get("forecast_metrics", pd.DataFrame())
+    forecast_metrics_html = ""
+    if not forecast_metrics.empty:
+        forecast_metrics_html = forecast_metrics.to_html(
+            classes="table", border=0, float_format="{:.3f}".format, na_rep="N/A"
+        )
+
     # ── Channel Table ──
     purpose_html = ""
     if purpose_df is not None and not purpose_df.empty:
@@ -156,6 +163,8 @@ def build_html_report(
   <!-- Forecasting -->
   <div class="section">
     <h2>Business Forecasting — Next 6 Months</h2>
+    <p>ARIMA scores use the final six observed months as a holdout. Default-rate MAE and RMSE are percentage points; MAPE is omitted because small rates make it misleading. Recent loan vintages may also have unresolved outcomes, so their observed rates can understate eventual defaults.</p>
+    {forecast_metrics_html}
     {img_tag("forecast_loans_disbursed.png", "Loans Forecast")}
     <div class="chart-grid" style="margin-top:20px;">
       {img_tag("forecast_default_rate.png", "Default Rate Forecast")}

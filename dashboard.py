@@ -184,9 +184,6 @@ with st.sidebar:
     st.markdown("### Filters")
     age_range = st.slider("Age Range", 18, 80, (21, 65))
     default_filter = st.selectbox("Loan Status", ["All", "Non-Default (0)", "Default (1)"])
-    st.markdown("---")
-    st.markdown("**FinSight v1.0**")
-    st.markdown("Consumer Finance Analytics")
 
 
 # ────────────────────────────
@@ -295,7 +292,7 @@ with tab2:
 
     try:
         monthly = get_monthly_kpis()
-        from models.forecasting import arima_forecast
+        from models.forecasting import arima_forecast, backtest_arima
 
         kpi_columns = {
             "Funded loan amount": "total_loans_disbursed",
@@ -305,6 +302,7 @@ with tab2:
         kpi_choice = st.selectbox("Metric", list(kpi_columns))
         series = monthly[kpi_columns[kpi_choice]]
         forecast = arima_forecast(series, steps=6)
+        backtest = backtest_arima(series, horizon=6)
 
         fig, ax = plt.subplots(figsize=(11, 4.5))
         ax.plot(series.index, series.values, color=PALETTE[0],
@@ -333,6 +331,20 @@ with tab2:
             fc_df["Forecasted Value"] = fc_df["Forecasted Value"].map(lambda value: f"{value:,.0f}")
         st.caption("Forecasts are model estimates based on the historical monthly series.")
         st.dataframe(fc_df, use_container_width=True)
+
+        st.markdown("**ARIMA backtest (last six observed months)**")
+        if backtest["Backtest Months"]:
+            metric_unit = "percentage points" if kpi_columns[kpi_choice] == "default_rate_%" else "same units as KPI"
+            m1, m2, m3 = st.columns(3)
+            m1.metric("MAE", f"{backtest['MAE']:,.3f}")
+            m2.metric("RMSE", f"{backtest['RMSE']:,.3f}")
+            m3.metric("MAPE", f"{backtest['MAPE (%)']:,.2f}%" if pd.notna(backtest["MAPE (%)"]) else "N/A")
+            if kpi_columns[kpi_choice] == "default_rate_%":
+                st.caption("MAE and RMSE are in percentage points. MAPE is omitted because small actual rates can make it misleading; recent Lending Club vintages also have unresolved loans.")
+            else:
+                st.caption(f"MAE and RMSE are in {metric_unit}. MAPE excludes zero actuals.")
+        else:
+            st.caption("At least 24 training months plus six held-out months are needed to show backtest scores.")
 
     except Exception as e:
         st.error(f"Forecasting error: {e}")

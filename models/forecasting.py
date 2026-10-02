@@ -108,6 +108,51 @@ def arima_forecast(series: pd.Series, steps: int = 6) -> pd.Series:
     return forecast
 
 
+def backtest_arima(series: pd.Series, horizon: int = 6) -> dict:
+    """Evaluate ARIMA on the final horizon, which is held out from fitting.
+
+    Forecasts are recursive multi-step predictions made from the earlier
+    observations only. MAPE ignores zero actuals, where percentage error is
+    undefined. Returns NaN metrics if there is not enough history.
+    """
+    observed = series.dropna().astype(float)
+    minimum_train_size = 24
+    result = {
+        "MAE": np.nan,
+        "RMSE": np.nan,
+        "MAPE (%)": np.nan,
+        "Backtest Months": 0,
+    }
+    if horizon < 1 or len(observed) < minimum_train_size + horizon:
+        return result
+
+    train = observed.iloc[:-horizon]
+    actual = observed.iloc[-horizon:]
+    prediction = arima_forecast(train, steps=horizon).to_numpy(dtype=float)
+
+    # Apply the same valid-range constraints used for the production forecast.
+    if "rate" in str(series.name).lower():
+        prediction = np.clip(prediction, 0.0, 1.0)
+    else:
+        prediction = np.clip(prediction, 0.0, None)
+
+    actual_values = actual.to_numpy(dtype=float)
+    metric_scale = 100.0 if "rate" in str(series.name).lower() else 1.0
+    errors = (prediction - actual_values) * metric_scale
+    nonzero = actual_values != 0
+    result["MAE"] = float(np.mean(np.abs(errors)))
+    result["RMSE"] = float(np.sqrt(np.mean(np.square(errors))))
+    # MAPE is unstable for default-rate series when actuals are close to zero.
+    # Keep absolute errors in percentage points for that KPI and omit MAPE.
+    is_rate = "rate" in str(series.name).lower()
+    result["MAPE (%)"] = (
+        float(np.mean(np.abs(errors[nonzero] / (actual_values[nonzero] * metric_scale))) * 100)
+        if nonzero.any() and not is_rate else np.nan
+    )
+    result["Backtest Months"] = int(len(actual_values))
+    return result
+
+
 def plot_forecast(series: pd.Series, forecast: pd.Series, title: str,
                   ylabel: str, filename: str, percentage: bool = False):
     fig, ax = plt.subplots(figsize=(11, 5))
@@ -141,6 +186,10 @@ def run_forecasting(df: pd.DataFrame) -> dict:
 
     for column, result_key, title, ylabel, filename, percentage in forecast_specs:
         history = monthly[column].dropna()
+        backtest = backtest_arima(history, horizon=6)
+        backtest["KPI"] = title
+        backtest["MAE Unit"] = "percentage points" if percentage else ylabel
+        results.setdefault("forecast_metrics", []).append(backtest)
         forecast = arima_forecast(history, steps=6)
         if percentage:
             forecast = forecast.clip(0, 1)
@@ -148,6 +197,10 @@ def run_forecasting(df: pd.DataFrame) -> dict:
             forecast = forecast.clip(lower=0)
         plot_forecast(history, forecast, f"{title} — 6-Month Forecast", ylabel, filename, percentage)
         results[result_key] = forecast
+
+    results["forecast_metrics"] = pd.DataFrame(results["forecast_metrics"]).set_index("KPI")
+    print("\nARIMA six-month holdout backtest (last six observed months):")
+    print(results["forecast_metrics"].round(3).to_string())
 
     return results
 
