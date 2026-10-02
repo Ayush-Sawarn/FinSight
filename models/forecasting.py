@@ -13,7 +13,7 @@ import pandas as pd
 warnings.filterwarnings("ignore")
 os.makedirs("reports/figures", exist_ok=True)
 
-PALETTE = ["#2196F3", "#F44336", "#4CAF50"]
+PALETTE = ["#246b68", "#b85c50", "#577590"]
 DEFAULT_LENDING_CLUB_PATH = "data/accepted_2007_to_2018Q4.csv.gz"
 
 

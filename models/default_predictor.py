@@ -19,7 +19,7 @@ warnings.filterwarnings("ignore")
 os.makedirs("reports/figures", exist_ok=True)
 os.makedirs("models/saved", exist_ok=True)
 
-PALETTE = ["#2196F3", "#F44336", "#4CAF50", "#FF9800"]
+PALETTE = ["#246b68", "#b85c50", "#577590", "#c28e3e"]
 
 
 # ─────────────────────────────────────────────
@@ -33,7 +33,7 @@ def train_models(X_train, y_train) -> dict:
     models = {}
 
     # Random Forest
-    print("[•] Training Random Forest...")
+    print("Training Random Forest...")
     rf = RandomForestClassifier(
         n_estimators=200,
         max_depth=12,
@@ -44,14 +44,14 @@ def train_models(X_train, y_train) -> dict:
     )
     rf.fit(X_train, y_train)
     rf_cv = cross_val_score(rf, X_train, y_train, cv=5, scoring="roc_auc", n_jobs=-1)
-    print(f"[✓] Random Forest — CV ROC-AUC: {rf_cv.mean():.4f} ± {rf_cv.std():.4f}")
+    print(f"Random Forest — CV ROC-AUC: {rf_cv.mean():.4f} ± {rf_cv.std():.4f}")
     models["random_forest"] = {"model": rf, "cv_auc": rf_cv.mean()}
     joblib.dump(rf, "models/saved/random_forest.pkl")
 
     # XGBoost (optional)
     try:
         from xgboost import XGBClassifier
-        print("[•] Training XGBoost...")
+        print("Training XGBoost...")
         xgb = XGBClassifier(
             n_estimators=300,
             max_depth=6,
@@ -65,7 +65,7 @@ def train_models(X_train, y_train) -> dict:
         )
         xgb.fit(X_train, y_train)
         xgb_cv = cross_val_score(xgb, X_train, y_train, cv=5, scoring="roc_auc", n_jobs=-1)
-        print(f"[✓] XGBoost — CV ROC-AUC: {xgb_cv.mean():.4f} ± {xgb_cv.std():.4f}")
+        print(f"XGBoost — CV ROC-AUC: {xgb_cv.mean():.4f} ± {xgb_cv.std():.4f}")
         models["xgboost"] = {"model": xgb, "cv_auc": xgb_cv.mean()}
         joblib.dump(xgb, "models/saved/xgboost.pkl")
     except ImportError:
@@ -131,7 +131,7 @@ def plot_feature_importance(model, feature_names: list, model_name: str = "Rando
     fname = f"reports/figures/feature_importance_{model_name.lower().replace(' ', '_')}.png"
     plt.savefig(fname)
     plt.close()
-    print(f"[✓] Saved: {fname}")
+    print(f"Saved: {fname}")
 
 
 # ─────────────────────────────────────────────
@@ -160,7 +160,7 @@ def plot_roc_curves(models: dict, X_test, y_test):
     plt.tight_layout()
     plt.savefig("reports/figures/roc_curves.png")
     plt.close()
-    print("[✓] Saved: reports/figures/roc_curves.png")
+    print("Saved: reports/figures/roc_curves.png")
 
 
 # ─────────────────────────────────────────────
@@ -187,7 +187,7 @@ def plot_confusion_matrix(model, X_test, y_test, model_name: str = "Random Fores
     fname = f"reports/figures/confusion_matrix_{model_name.lower().replace(' ', '_')}.png"
     plt.savefig(fname)
     plt.close()
-    print(f"[✓] Saved: {fname}")
+    print(f"Saved: {fname}")
 
 
 # ─────────────────────────────────────────────
@@ -205,7 +205,7 @@ def run_default_prediction_pipeline(X_train, X_test, y_train, y_test) -> dict:
     plot_roc_curves(models, X_test, y_test)
     plot_confusion_matrix(best_model, X_test, y_test, best_model_name.replace("_", " ").title())
 
-    print(f"\n[✓] Best model: {best_model_name} — ROC-AUC: {metrics.loc[best_model_name.replace('_',' ').title(), 'ROC-AUC']}")
+    print(f"\nBest model: {best_model_name} — ROC-AUC: {metrics.loc[best_model_name.replace('_',' ').title(), 'ROC-AUC']}")
     return {"models": models, "metrics": metrics, "best_model": best_model}
 
 

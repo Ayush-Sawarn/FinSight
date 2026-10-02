@@ -15,7 +15,7 @@ import os
 
 os.makedirs("reports/figures", exist_ok=True)
 
-PALETTE = ["#2196F3", "#F44336", "#4CAF50", "#FF9800", "#9C27B0"]
+PALETTE = ["#246b68", "#b85c50", "#577590", "#c28e3e", "#786a9b"]
 
 
 def analyze_loan_purpose(df: pd.DataFrame) -> pd.DataFrame:
@@ -79,7 +79,7 @@ def detect_anomalies(monthly_kpis: pd.DataFrame) -> pd.DataFrame:
             anomalies[f"{col}_anomaly"] = z_scores.abs() > 2.0
 
     flagged = anomalies[anomalies.filter(like="_anomaly").any(axis=1)]
-    print(f"\n[✓] Anomaly Detection: {len(flagged)} months flagged out of {len(monthly_kpis)}")
+    print(f"\nAnomaly detection: {len(flagged)} months flagged out of {len(monthly_kpis)}")
     return anomalies
 
 
@@ -108,7 +108,7 @@ def plot_anomaly_detection(monthly_kpis: pd.DataFrame, anomalies: pd.DataFrame):
     plt.tight_layout()
     plt.savefig("reports/figures/anomaly_detection.png")
     plt.close()
-    print("[✓] Saved: reports/figures/anomaly_detection.png")
+    print("Saved: reports/figures/anomaly_detection.png")
 
 
 # ─────────────────────────────────────────────
@@ -162,22 +162,20 @@ def generate_recommendations(
             "action": "Deploy model to production scoring pipeline. Schedule quarterly retraining."
         })
 
-    print(f"\n[✓] Generated {len(recs)} business recommendations")
+    print(f"\nGenerated {len(recs)} business recommendations")
     return recs
 
 
 def print_recommendations(recs: list):
     """Pretty-print recommendations to console."""
-    priority_icons = {"HIGH": "🔴", "MEDIUM": "🟡", "INFO": "🔵"}
-    print("\n" + "═" * 60)
+    print("\n" + "-" * 60)
     print("  BUSINESS INSIGHTS & RECOMMENDATIONS")
-    print("═" * 60)
+    print("-" * 60)
     for i, rec in enumerate(recs, 1):
-        icon = priority_icons.get(rec["priority"], "⚪")
-        print(f"\n{icon} [{rec['priority']}] {rec['area']}")
+        print(f"\n[{rec['priority']}] {rec['area']}")
         print(f"   Insight : {rec['insight']}")
         print(f"   Action  : {rec['action']}")
-    print("\n" + "═" * 60)
+    print("\n" + "-" * 60)
 
 
 if __name__ == "__main__":

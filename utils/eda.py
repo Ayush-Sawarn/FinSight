@@ -16,7 +16,7 @@ import os
 
 os.makedirs("reports/figures", exist_ok=True)
 
-PALETTE = ["#2196F3", "#F44336", "#4CAF50", "#FF9800", "#9C27B0"]
+PALETTE = ["#246b68", "#b85c50", "#577590", "#c28e3e", "#786a9b"]
 plt.rcParams.update({"font.family": "DejaVu Sans", "figure.dpi": 120})
 
 
@@ -58,7 +58,7 @@ def plot_target_distribution(df: pd.DataFrame, target_col: str = "Default"):
     plt.tight_layout()
     plt.savefig("reports/figures/target_distribution.png")
     plt.close()
-    print("[✓] Saved: reports/figures/target_distribution.png")
+    print("Saved: reports/figures/target_distribution.png")
 
 
 # ─────────────────────────────────────────────
@@ -86,7 +86,7 @@ def plot_numeric_distributions(df: pd.DataFrame, cols: list = None):
     plt.tight_layout()
     plt.savefig("reports/figures/numeric_distributions.png", bbox_inches="tight")
     plt.close()
-    print("[✓] Saved: reports/figures/numeric_distributions.png")
+    print("Saved: reports/figures/numeric_distributions.png")
 
 
 # ─────────────────────────────────────────────
@@ -121,7 +121,7 @@ def plot_default_rate_by_age(df: pd.DataFrame):
     plt.tight_layout()
     plt.savefig("reports/figures/default_rate_by_age.png")
     plt.close()
-    print("[✓] Saved: reports/figures/default_rate_by_age.png")
+    print("Saved: reports/figures/default_rate_by_age.png")
 
 
 # ─────────────────────────────────────────────
@@ -140,7 +140,7 @@ def plot_correlation_heatmap(df: pd.DataFrame):
     plt.tight_layout()
     plt.savefig("reports/figures/correlation_heatmap.png")
     plt.close()
-    print("[✓] Saved: reports/figures/correlation_heatmap.png")
+    print("Saved: reports/figures/correlation_heatmap.png")
 
 
 # ─────────────────────────────────────────────
@@ -170,7 +170,7 @@ def plot_loan_amount_by_default(df: pd.DataFrame):
     plt.tight_layout()
     plt.savefig("reports/figures/loan_amount_by_default.png")
     plt.close()
-    print("[✓] Saved: reports/figures/loan_amount_by_default.png")
+    print("Saved: reports/figures/loan_amount_by_default.png")
 
 
 # ─────────────────────────────────────────────
@@ -184,7 +184,7 @@ def run_full_eda(df: pd.DataFrame):
     plot_default_rate_by_age(df)
     plot_correlation_heatmap(df)
     plot_loan_amount_by_default(df)
-    print("\n[✓] EDA complete — all figures saved to reports/figures/")
+    print("\nEDA complete. Figures saved to reports/figures/.")
 
 
 if __name__ == "__main__":

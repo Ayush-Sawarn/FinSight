@@ -21,25 +21,115 @@ sys.path.append(".")
 
 # ── Page Config ──
 st.set_page_config(
-    page_title="FinSight — Business Analytics",
+    page_title="FinSight | Loan Portfolio Analytics",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# ── Custom CSS ──
+# App-wide visual theme and component styling.
 st.markdown("""
 <style>
-    .metric-card {
-        background: linear-gradient(135deg, #E3F2FD, #BBDEFB);
-        border-radius: 12px; padding: 18px; text-align: center;
+    :root {
+        --page: #f3f5f7;
+        --surface: #ffffff;
+        --ink: #172b4d;
+        --muted: #5f6b7a;
+        --line: #dce2e8;
+        --accent: #246b68;
+        --accent-soft: #e8f2f1;
     }
-    .stMetric { background: #F0F4FF; border-radius: 10px; padding: 12px; }
-    h1 { color: #1565C0 !important; }
-    .stTabs [data-baseweb="tab"] { font-size: 15px; font-weight: 600; }
+    html, body, [class*="css"] {
+        font-family: "Segoe UI", "Aptos", Arial, sans-serif;
+        color: var(--ink);
+    }
+    .stApp, [data-testid="stAppViewContainer"] {
+        background: var(--page);
+        color: var(--ink);
+    }
+    [data-testid="stHeader"] { background: transparent; }
+    .block-container { max-width: 1480px; padding-top: 2.2rem; padding-bottom: 3rem; }
+    h1, h2, h3, h4 { color: var(--ink) !important; letter-spacing: -0.02em; }
+    h1 { font-size: 2.15rem !important; font-weight: 650 !important; }
+    h2 { font-size: 1.45rem !important; font-weight: 620 !important; }
+    h3, h4 { font-weight: 600 !important; }
+    p, label, li, [data-testid="stMarkdownContainer"] { color: var(--ink); }
+    [data-testid="stMetric"] {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 1rem 1.1rem;
+        box-shadow: 0 2px 8px rgba(23, 43, 77, 0.04);
+    }
+    [data-testid="stMetricLabel"], [data-testid="stMetricLabel"] p {
+        color: var(--muted) !important;
+        font-size: 0.82rem !important;
+        font-weight: 550 !important;
+    }
+    [data-testid="stMetricValue"], [data-testid="stMetricValue"] div {
+        color: var(--ink) !important;
+        font-size: 1.8rem !important;
+        font-weight: 650 !important;
+    }
+    [data-testid="stMetricDelta"] { font-size: 0.78rem !important; }
+    [data-testid="stTabs"] [role="tablist"] {
+        gap: 0.45rem;
+        border-bottom: 1px solid var(--line);
+    }
+    [data-testid="stTabs"] button[role="tab"] {
+        color: var(--muted) !important;
+        font-weight: 550;
+        padding: 0.7rem 1rem;
+    }
+    [data-testid="stTabs"] button[role="tab"][aria-selected="true"] {
+        color: var(--accent) !important;
+        border-bottom-color: var(--accent) !important;
+    }
+    [data-testid="stSidebar"] {
+        background: #edf1f4;
+        border-right: 1px solid var(--line);
+    }
+    [data-testid="stSidebar"] [data-testid="stMarkdownContainer"] p { color: var(--muted); }
+    div[data-baseweb="select"] > div, div[data-baseweb="input"] > div,
+    [data-testid="stNumberInput"] input {
+        background: var(--surface) !important;
+        color: var(--ink) !important;
+        border-color: var(--line) !important;
+        border-radius: 8px !important;
+    }
+    [data-testid="stDataFrame"], [data-testid="stTable"] {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+    }
+    .stButton button {
+        background: var(--accent);
+        color: #ffffff;
+        border: 1px solid var(--accent);
+        border-radius: 8px;
+        font-weight: 600;
+    }
+    .stButton button:hover { background: #1d5856; color: #ffffff; border-color: #1d5856; }
+    hr { border-color: var(--line); }
+    [data-testid="stAlert"] { border-radius: 10px; }
 </style>
 """, unsafe_allow_html=True)
 
-PALETTE = ["#2196F3", "#F44336", "#4CAF50", "#FF9800", "#9C27B0"]
+PALETTE = ["#246b68", "#b85c50", "#577590", "#c28e3e", "#786a9b"]
+plt.rcParams.update({
+    "font.family": "DejaVu Sans",
+    "font.size": 10,
+    "axes.titlesize": 12,
+    "axes.titleweight": "semibold",
+    "axes.labelcolor": "#334155",
+    "xtick.color": "#52616b",
+    "ytick.color": "#52616b",
+    "text.color": "#172b4d",
+    "axes.edgecolor": "#dce2e8",
+    "axes.facecolor": "#ffffff",
+    "figure.facecolor": "#ffffff",
+    "savefig.facecolor": "#ffffff",
+    "grid.color": "#e7ebef",
+})
 
 
 # ── Data Loading ──
@@ -89,7 +179,8 @@ def get_purpose_data():
 # SIDEBAR
 # ────────────────────────────
 with st.sidebar:
-    st.image("https://via.placeholder.com/200x60/1565C0/FFFFFF?text=FinSight", width=200)
+    st.markdown("## FinSight")
+    st.caption("Loan portfolio analytics")
     st.markdown("### Filters")
     age_range = st.slider("Age Range", 18, 80, (21, 65))
     default_filter = st.selectbox("Loan Status", ["All", "Non-Default (0)", "Default (1)"])
@@ -101,8 +192,9 @@ with st.sidebar:
 # ────────────────────────────
 # MAIN CONTENT
 # ────────────────────────────
-st.title("FinSight — Business Performance Dashboard")
-st.markdown("*Loan portfolio analytics, forecasting, and decision support*")
+st.title("FinSight | Loan Portfolio Analytics")
+st.markdown("Historical performance, credit risk, and portfolio forecasts")
+st.caption("Default analysis uses loan_default.csv. Forecasts and loan-purpose summaries use Lending Club records from 2007–2018.")
 st.markdown("---")
 
 # Load data
@@ -130,7 +222,7 @@ avg_income = df_filtered["Income"].mean() if "Income" in df_filtered.columns els
 
 col1.metric("Total Records", f"{total:,}", delta=None)
 col2.metric("Total Defaults", f"{defaults:,}")
-col3.metric("Default Rate", f"{default_rate:.2f}%", delta=f"{default_rate - 20:.1f}% vs 20% target")
+col3.metric("Default Rate", f"{default_rate:.2f}%")
 col4.metric("Avg Loan Amount", f"{avg_loan:,.0f}")
 col5.metric("Avg Income", f"{avg_income:,.0f}")
 
@@ -205,12 +297,13 @@ with tab2:
         monthly = get_monthly_kpis()
         from models.forecasting import arima_forecast
 
-        kpi_choice = st.selectbox(
-            "Select KPI to Forecast",
-            ["total_loans_disbursed", "default_rate_%", "loan_count"]
-        )
-
-        series = monthly[kpi_choice]
+        kpi_columns = {
+            "Funded loan amount": "total_loans_disbursed",
+            "Resolved default rate": "default_rate_%",
+            "Number of loans issued": "loan_count",
+        }
+        kpi_choice = st.selectbox("Metric", list(kpi_columns))
+        series = monthly[kpi_columns[kpi_choice]]
         forecast = arima_forecast(series, steps=6)
 
         fig, ax = plt.subplots(figsize=(11, 4.5))
@@ -218,12 +311,13 @@ with tab2:
                 linewidth=2, label="Historical", marker="o", markersize=3)
         ax.plot(forecast.index, forecast.values, color=PALETTE[1],
                 linewidth=2.5, linestyle="--", label="Forecast", marker="s", markersize=5)
-        ax.fill_between(forecast.index,
-                        forecast.values * 0.95, forecast.values * 1.05,
-                        alpha=0.15, color=PALETTE[1], label="±5% Band")
-        ax.axvline(x=series.index[-1], color="gray", linestyle=":", linewidth=1.2)
-        ax.set_title(f"{kpi_choice.replace('_', ' ').title()} — 6-Month Forecast",
+        ax.set_title(f"{kpi_choice} — Six-Month Forecast",
                      fontsize=13, fontweight="bold")
+        ax.set_ylabel("Default rate (%)" if kpi_columns[kpi_choice] == "default_rate_%" else kpi_choice)
+        if kpi_columns[kpi_choice] == "default_rate_%":
+            ax.yaxis.set_major_formatter(mticker.PercentFormatter(xmax=1))
+        else:
+            ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda value, _: f"{value:,.0f}"))
         ax.legend(frameon=False)
         ax.spines[["top", "right"]].set_visible(False)
         st.pyplot(fig)
@@ -233,7 +327,11 @@ with tab2:
         fc_df = forecast.reset_index()
         fc_df.columns = ["Month", "Forecasted Value"]
         fc_df["Month"] = fc_df["Month"].dt.strftime("%B %Y")
-        fc_df["Forecasted Value"] = fc_df["Forecasted Value"].round(4)
+        if kpi_columns[kpi_choice] == "default_rate_%":
+            fc_df["Forecasted Value"] = fc_df["Forecasted Value"].map(lambda value: f"{value:.2%}")
+        else:
+            fc_df["Forecasted Value"] = fc_df["Forecasted Value"].map(lambda value: f"{value:,.0f}")
+        st.caption("Forecasts are model estimates based on the historical monthly series.")
         st.dataframe(fc_df, use_container_width=True)
 
     except Exception as e:
@@ -288,7 +386,7 @@ with tab4:
     if os.path.exists(model_path):
         import joblib
         model = joblib.load(model_path)
-        st.success("✅ Random Forest model loaded")
+        st.markdown("**Random Forest model loaded**")
 
         st.markdown("**Predict Default Risk for a New Applicant**")
         c1, c2, c3 = st.columns(3)
@@ -296,13 +394,13 @@ with tab4:
         income_in = c2.number_input("Annual Income", 100000, 5000000, 600000, step=50000)
         loan_in = c3.number_input("Loan Amount", 50000, 3000000, 500000, step=50000)
 
-        if st.button("🔍 Predict Default Risk"):
+        if st.button("Estimate Default Risk"):
             lti = loan_in / (income_in + 1)
             input_df = pd.DataFrame([[age_in, income_in, loan_in, lti]],
                                     columns=["Age", "Income", "LoanAmount", "loan_to_income_ratio"])
             try:
                 proba = model.predict_proba(input_df)[0][1]
-                risk_label = "🔴 HIGH RISK" if proba > 0.5 else "🟢 LOW RISK"
+                risk_label = "High risk" if proba > 0.5 else "Lower risk"
                 st.metric("Default Probability", f"{proba*100:.1f}%")
                 st.markdown(f"**Risk Level: {risk_label}**")
             except Exception as e:
@@ -320,8 +418,10 @@ with tab5:
         from utils.insights import generate_recommendations
         recs = generate_recommendations(purpose_df, None, {})
 
-        priority_colors = {"HIGH": "#F44336", "MEDIUM": "#FF9800", "INFO": "#2196F3"}
+        priority_colors = {"HIGH": "#b85c50", "MEDIUM": "#c28e3e", "INFO": "#577590"}
 
+        if not recs:
+            st.info("No recommendation rules were triggered by the current loan-purpose data.")
         for rec in recs:
             color = priority_colors.get(rec["priority"], "#9E9E9E")
             st.markdown(f"""

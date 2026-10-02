@@ -56,7 +56,7 @@ def build_html_report(
         purpose_html = purpose_display.to_html(classes="table", border=0, index=False)
 
     # ── Recommendations HTML ──
-    priority_colors = {"HIGH": "#F44336", "MEDIUM": "#FF9800", "INFO": "#2196F3"}
+    priority_colors = {"HIGH": "#b85c50", "MEDIUM": "#c28e3e", "INFO": "#577590"}
     recs_html = ""
     for rec in recommendations:
         color = priority_colors.get(rec["priority"], "#9E9E9E")
@@ -206,7 +206,7 @@ def build_html_report(
 def save_report(html: str, filename: str = "reports/output/business_performance_report.html"):
     with open(filename, "w", encoding="utf-8") as f:
         f.write(html)
-    print(f"\n[✓] Report saved: {filename}")
+    print(f"\nReport saved: {filename}")
 
 
 if __name__ == "__main__":
