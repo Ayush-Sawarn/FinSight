@@ -1,0 +1,29 @@
+# Python virtual environments
+.venv/
+venv/
+env/
+
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# Downloaded datasets (large files; obtain using the README instructions)
+data/*.csv
+data/*.csv.gz
+
+# Trained model artifacts
+models/saved/*.pkl
+models/saved/*.joblib
+
+# IDE and operating system files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
